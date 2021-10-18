@@ -1,4 +1,10 @@
-import { Box, CircularProgress, Container, Typography } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  Container,
+  Grow,
+  Typography,
+} from '@mui/material'
 import Button from '@mui/material/Button'
 import * as React from 'react'
 import { ethers } from 'ethers'
@@ -137,14 +143,16 @@ export default function Index() {
           gap: 2,
         }}
       >
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={askContractToMintNft}
-        >
-          Mint NFT
-        </Button>
-        {!currentAccount && (
+        <Grow in={!!currentAccount}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={askContractToMintNft}
+          >
+            Mint NFT
+          </Button>
+        </Grow>
+        <Grow in={!currentAccount}>
           <Button
             color="primary"
             variant="outlined"
@@ -153,7 +161,7 @@ export default function Index() {
           >
             Connect Wallet
           </Button>
-        )}
+        </Grow>
       </Box>
       {loading && (
         <Box
