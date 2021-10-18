@@ -2,7 +2,7 @@ import { Box, CircularProgress, Container, Typography } from '@mui/material'
 import Button from '@mui/material/Button'
 import * as React from 'react'
 import { ethers } from 'ethers'
-import myEpicNft from '../artifacts/contracts/MyEpicNFT.sol/MyEpicNFT.json'
+import myEpicNft from '../src/utils/MyEpicNFT.json'
 
 // Constants
 const TWITTER_HANDLE = '_buildspace'
