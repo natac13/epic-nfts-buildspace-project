@@ -1,8 +1,15 @@
 import { Box, CircularProgress, Container, Typography } from '@mui/material'
 import Button from '@mui/material/Button'
 import * as React from 'react'
+import { ethers } from 'ethers'
+import myEpicNft from '../artifacts/contracts/MyEpicNFT.sol/MyEpicNFT.json'
 
-// Client-side cache, shared for the whole session of the user in the browser.
+// Constants
+const TWITTER_HANDLE = '_buildspace'
+const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`
+const OPENSEA_LINK = ''
+const TOTAL_MINT_COUNT = 50
+const CONTRACT_ADDRESS = '0x977e6b65B2E2Bb8fD13F2423163c15Fb67b3F5C6'
 
 export default function Index() {
   const [currentAccount, setCurrentAccount] = React.useState('')
@@ -52,11 +59,43 @@ export default function Index() {
         alert('Get MetaMask!')
         return
       }
+      console.log('heelo')
 
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
 
       console.log('Connected', accounts[0])
       setCurrentAccount(accounts[0])
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const askContractToMintNft = async () => {
+    try {
+      const { ethereum } = window
+      console.log('??')
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum)
+        const signer = provider.getSigner()
+        const connectedContract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          myEpicNft.abi,
+          signer
+        )
+
+        console.log('Going to pop wallet now to pay gas...')
+        const nftTxn = await connectedContract.makeAnEpicNFT()
+
+        console.log('Mining...please wait.')
+        await nftTxn.wait()
+
+        console.log(
+          `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
+        )
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
     } catch (error) {
       console.log(error)
     }
@@ -98,6 +137,13 @@ export default function Index() {
           gap: 2,
         }}
       >
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={askContractToMintNft}
+        >
+          Mint NFT
+        </Button>
         {!currentAccount && (
           <Button
             color="primary"
