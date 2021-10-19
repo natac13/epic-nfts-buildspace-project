@@ -3,6 +3,7 @@ import {
   CircularProgress,
   Container,
   Grow,
+  Link,
   Typography,
 } from '@mui/material'
 import Button from '@mui/material/Button'
@@ -15,18 +16,42 @@ const TWITTER_HANDLE = '_buildspace'
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`
 const OPENSEA_LINK = ''
 const TOTAL_MINT_COUNT = 50
-// const CONTRACT_ADDRESS = '0x977e6b65B2E2Bb8fD13F2423163c15Fb67b3F5C6'
-const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+const CONTRACT_ADDRESS = '0x75d580a45E4ed33f7c034e2284659680e6019Ef5'
+
+const createOpenSeaLink = (
+  contractAddress: string,
+  tokenId: string
+): string => {
+  return `https://testnets.opensea.io/assets/${contractAddress}/${tokenId}`
+}
+
+const createRaribleLink = (
+  contractAddress: string,
+  tokenId: string
+): string => {
+  return `https://rinkeby.rarible.com/token/${contractAddress}/${tokenId}`
+}
 
 export default function Index() {
   const [currentAccount, setCurrentAccount] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [counter, setCounter] = React.useState(0)
+  const [lastMintedUrl, setLastMintedUrl] = React.useState('')
 
-  // const onChange = (str: string): void => {
-  //   setError('')
-  //   setMessage(str)
-  // }
+  const checkCorrectBlockchain = async () => {
+    const { ethereum } = window
+    if (ethereum) {
+      const chainId = await ethereum.request({ method: 'eth_chainId' })
+      console.log('Connected to chain ' + chainId)
+
+      // String, hex code of the chainId of the Rinkebey test network
+      const rinkebyChainId = '0x4'
+      if (chainId !== rinkebyChainId) {
+        alert('You are not connected to the Rinkeby Test Network!')
+      }
+    }
+    return true
+  }
   // Setup our listener.
   const setupEventListener = async () => {
     // Most of this looks the same as our function askContractToMintNft
@@ -48,6 +73,7 @@ export default function Index() {
         // If you're familiar with webhooks, it's very similar to that!
         connectedContract.on('NewEpicNFTMinted', (from, tokenId) => {
           console.log(from, tokenId.toNumber())
+          setLastMintedUrl(createOpenSeaLink(CONTRACT_ADDRESS, tokenId))
           // alert(
           //   `Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
           // )
@@ -164,26 +190,18 @@ export default function Index() {
       )
       const minedCount = await contract.getTotalNFTsMined()
       setCounter(minedCount?.toNumber())
+      setLastMintedUrl(
+        createOpenSeaLink(CONTRACT_ADDRESS, minedCount?.toNumber() - 1)
+      )
     } catch (error) {
       console.log({ error })
     }
   }
-  const createOpenSeaLink = (
-    contractAddress: string,
-    tokenId: string
-  ): string => {
-    return `https://testnet.opensea.io/assets/${contractAddress}/${tokenId}`
-  }
-
-  const createRaribleLink = (
-    contractAddress: string,
-    tokenId: string
-  ): string => {
-    return `https://rinkeby.rarible.com/token/${contractAddress}/${tokenId}`
-  }
 
   React.useEffect(() => {
-    checkIfWalletIsConnected()
+    checkCorrectBlockchain()
+      ?.then(checkIfWalletIsConnected)
+      ?.then(getMinedCount)
     // getMinedCount()
   }, [])
 
@@ -205,6 +223,11 @@ export default function Index() {
         <Typography variant="h5" align="center" fontWeight="700">
           Total Mined: {counter}
         </Typography>
+        {lastMintedUrl && (
+          <Typography variant="h5" align="center" fontWeight="700">
+            Last Minted NFT: <Link href={lastMintedUrl}>Here</Link>
+          </Typography>
+        )}
         {currentAccount && (
           <>
             <Typography variant="h6">Account</Typography>
