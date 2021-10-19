@@ -221,18 +221,23 @@ export default function Index() {
           Epic NFTs
         </Typography>
         <Typography variant="h5" align="center" fontWeight="700">
-          Total Mined: {counter}
+          Total Mined: {counter} / 100
         </Typography>
         {lastMintedUrl && (
           <Typography variant="h5" align="center" fontWeight="700">
-            Last Minted NFT: <Link href={lastMintedUrl}>Here</Link>
+            Last Minted NFT:{' '}
+            <Link href={lastMintedUrl} target="_blank">
+              Here
+            </Link>
           </Typography>
         )}
         {currentAccount && (
-          <>
-            <Typography variant="h6">Account</Typography>
+          <Box mt={3} display="flex" alignItems="center">
+            <Typography variant="h6" sx={{ mr: 1 }}>
+              Connected Account:
+            </Typography>
             <Typography variant="subtitle1">{currentAccount}</Typography>
-          </>
+          </Box>
         )}
       </Box>
       <Box
@@ -249,6 +254,14 @@ export default function Index() {
           <Box display="flex" flexDirection="column" gap={3}>
             <Button variant="contained" color="primary" onClick={getMinedCount}>
               Get Mined NFT Count
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              target="_blank"
+              href="https://testnets.opensea.io/collection/squarenft-xmductv7w7"
+            >
+              View Collection
             </Button>
             <Button
               variant="contained"
@@ -286,17 +299,6 @@ export default function Index() {
           <CircularProgress color="secondary" size={50} />
         </Box>
       )}
-      {/* <Box>
-        {allWaves?.map((wave, idx) => (
-          <Card key={idx} sx={{ mb: 2 }}>
-            <CardHeader title={wave?.address} />
-            <CardContent>
-              <Typography>Time: {wave?.timestamp.toString()}</Typography>
-              <Typography>Message: {wave?.message}</Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Box> */}
     </Container>
   )
 }
