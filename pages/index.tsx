@@ -15,11 +15,13 @@ const TWITTER_HANDLE = '_buildspace'
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`
 const OPENSEA_LINK = ''
 const TOTAL_MINT_COUNT = 50
-const CONTRACT_ADDRESS = '0x977e6b65B2E2Bb8fD13F2423163c15Fb67b3F5C6'
+// const CONTRACT_ADDRESS = '0x977e6b65B2E2Bb8fD13F2423163c15Fb67b3F5C6'
+const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 
 export default function Index() {
   const [currentAccount, setCurrentAccount] = React.useState('')
   const [loading, setLoading] = React.useState(false)
+  const [counter, setCounter] = React.useState(0)
 
   // const onChange = (str: string): void => {
   //   setError('')
@@ -46,9 +48,10 @@ export default function Index() {
         // If you're familiar with webhooks, it's very similar to that!
         connectedContract.on('NewEpicNFTMinted', (from, tokenId) => {
           console.log(from, tokenId.toNumber())
-          alert(
-            `Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
-          )
+          // alert(
+          //   `Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
+          // )
+          setCounter((state) => 1 + tokenId?.toNumber())
         })
 
         console.log('Setup event listener!')
@@ -80,7 +83,6 @@ export default function Index() {
         const account = accounts[0]
         console.log('Found an authorized account:', account)
         setCurrentAccount(account)
-
         setupEventListener()
       } else {
         console.log('No authorized account found')
@@ -130,9 +132,11 @@ export default function Index() {
 
         console.log('Going to pop wallet now to pay gas...')
         const nftTxn = await connectedContract.makeAnEpicNFT()
+        setLoading(true)
 
         console.log('Mining...please wait.')
         await nftTxn.wait()
+        setLoading(false)
 
         console.log(
           `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
@@ -145,6 +149,25 @@ export default function Index() {
     }
   }
 
+  const getMinedCount = async () => {
+    const { ethereum } = window
+
+    if (!ethereum) return
+
+    try {
+      const provider = new ethers.providers.Web3Provider(ethereum)
+      const singer = provider.getSigner()
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        myEpicNft.abi,
+        singer
+      )
+      const minedCount = await contract.getTotalNFTsMined()
+      setCounter(minedCount?.toNumber())
+    } catch (error) {
+      console.log({ error })
+    }
+  }
   const createOpenSeaLink = (
     contractAddress: string,
     tokenId: string
@@ -161,6 +184,7 @@ export default function Index() {
 
   React.useEffect(() => {
     checkIfWalletIsConnected()
+    // getMinedCount()
   }, [])
 
   return (
@@ -177,6 +201,9 @@ export default function Index() {
       >
         <Typography variant="h1" align="center" fontWeight="700">
           Epic NFTs
+        </Typography>
+        <Typography variant="h5" align="center" fontWeight="700">
+          Total Mined: {counter}
         </Typography>
         {currentAccount && (
           <>
@@ -196,13 +223,18 @@ export default function Index() {
         }}
       >
         <Grow in={!!currentAccount}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={askContractToMintNft}
-          >
-            Mint NFT
-          </Button>
+          <Box display="flex" flexDirection="column" gap={3}>
+            <Button variant="contained" color="primary" onClick={getMinedCount}>
+              Get Mined NFT Count
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={askContractToMintNft}
+            >
+              Mint NFT
+            </Button>
+          </Box>
         </Grow>
         <Grow in={!currentAccount}>
           <Button
