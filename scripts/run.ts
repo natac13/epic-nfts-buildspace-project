@@ -2,7 +2,7 @@ import hre from 'hardhat'
 
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory('MyEpicNFT')
-  const nftContract = await nftContractFactory.deploy()
+  const nftContract = await nftContractFactory.deploy(10_000)
   await nftContract.deployed()
   console.log('Contract deployed to:', nftContract.address)
 
@@ -15,6 +15,9 @@ const main = async () => {
   txn = await nftContract.makeAnEpicNFT()
   // Wait for it to be mined.
   await txn.wait()
+
+  const totalMined = await nftContract.getTotalNFTsMined()
+  console.log({ totalMined: totalMined?.toNumber() })
 }
 
 const runMain = async () => {
